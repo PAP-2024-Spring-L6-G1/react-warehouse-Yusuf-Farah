@@ -1,8 +1,14 @@
 import InventoryListingItem from "./InventoryListingItem";
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import axios from 'axios';
+
+const instance = axios.create({
+    baseURL: 'http://localhost:3005/',
+  });
 
 export default function InventoryListing(props) {
     const [currentPageIndex, setCurrentPageIndex] = useState(0);
+    const [inventory, setInventory] = useState([]);
     const myStyle = {
         margin: "0 auto",
         width: "30vw",
@@ -12,9 +18,21 @@ export default function InventoryListing(props) {
         width: "50%"
     }
     const allListingItems = []
-    for (var i = 0; i < 50; i++) {
-        allListingItems[i] = <InventoryListingItem count={i} />;
+    for (var i = 0; i < inventory.length; i++) {
+        allListingItems[i] = <InventoryListingItem name={inventory[i].name} count={inventory[i].count} />;
     }
+
+    async function getAllItems() {
+        try {
+            const response = await instance.get('/inventory');
+            console.log(response.data);
+            setInventory(response.data);
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    useEffect(()=>{getAllItems();}, []);
 
     const visibleListingItems = allListingItems.slice(currentPageIndex, currentPageIndex + props.maxVisible)
 
